@@ -20,6 +20,8 @@ describe('treatmentnotify', function ( ) {
 
   var treatmentnotify = require('../lib/plugins/treatmentnotify')(ctx);
 
+  var treatmentnotify = require('../lib/plugins/treatmentnotify')(ctx);
+
   var now = Date.now();
 
   it('Request a snooze for a recent treatment and request an info notify', function (done) {

@@ -10,10 +10,11 @@ describe('cage', function ( ) {
 
   ctx.ddata = require('../lib/data/ddata')();
   ctx.language = require('../lib/language')();
+  ctx.levels = levels;
 
   ctx.notifications = require('../lib/notifications')(env, ctx);
   var cage = require('../lib/plugins/cannulaage')(ctx);
-  var sandbox = require('../lib/sandbox')();
+  var sandbox = require('../lib/sandbox')(ctx);
   function prepareSandbox ( ) {
     var sbx = require('../lib/sandbox')().serverInit(env, ctx);
     sbx.offerProperty('iob', function () {

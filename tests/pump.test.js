@@ -4,80 +4,78 @@ var _ = require('lodash');
 var should = require('should');
 var moment = require('moment');
 const fs = require('fs');
+const language = require('../lib/language')(fs);
 
-describe('pump', function() {
+var top_ctx = {
+  language: language
+  , settings: require('../lib/settings')()
+};
+top_ctx.language.set('en');
+var env = require('../env')();
+var levels = require('../lib/levels');
+top_ctx.levels = levels;
+var pump = require('../lib/plugins/pump')(top_ctx);
+var sandbox = require('../lib/sandbox')(top_ctx);
 
-  const language = require('../lib/language')(fs);
-
-  var ctx = {
-    language: language
-    , settings: require('../lib/settings')()
-  };
-  ctx.language.set('en');
-  var env = require('../env')();
-  var sandbox = require('../lib/sandbox')();
-  var levels = require('../lib/levels');
-  ctx.levels = levels;
-
-  var pump = require('../lib/plugins/pump')(ctx);
-
-  var statuses = [{
-    created_at: '2015-12-05T17:35:00.000Z'
-    , device: 'openaps://farawaypi'
-    , pump: {
-      battery: {
-        status: 'normal'
-        , voltage: 1.52
-      }
-      , status: {
-        status: 'normal'
-        , bolusing: false
-        , suspended: false
-      }
-      , reservoir: 86.4
-      , clock: '2015-12-05T17:32:00.000Z'
-    }
+var statuses = [{
+  created_at: '2015-12-05T17:35:00.000Z'
+  , device: 'openaps://farawaypi'
+  , pump: {
+    battery: {
+      status: 'normal',
+      voltage: 1.52
+    },
+    status: {
+      status: 'normal',
+      bolusing: false,
+      suspended: false
+    },
+    reservoir: 86.4,
+    clock: '2015-12-05T17:32:00.000Z'
+  }
 }, {
-    created_at: '2015-12-05T19:05:00.000Z'
-    , device: 'openaps://abusypi'
-    , pump: {
-      battery: {
-        status: 'normal'
-        , voltage: 1.52
-      }
-      , status: {
-        status: 'normal'
-        , bolusing: false
-        , suspended: false
-      }
-      , reservoir: 86.4
-      , clock: '2015-12-05T19:02:00.000Z'
-    }
+  created_at: '2015-12-05T19:05:00.000Z'
+  , device: 'openaps://abusypi'
+  , pump: {
+    battery: {
+      status: 'normal',
+      voltage: 1.52
+    },
+    status: {
+      status: 'normal',
+      bolusing: false,
+      suspended: false
+    },
+    reservoir: 86.4,
+    clock: '2015-12-05T19:02:00.000Z'
+  }
 }];
 
-  var now = moment(statuses[1].created_at);
+var now = moment(statuses[1].created_at);
 
-  _.forEach(statuses, function updateMills (status) {
-    status.mills = moment(status.created_at).valueOf();
-  });
+_.forEach(statuses, function updateMills (status) {
+  status.mills = moment(status.created_at).valueOf();
+});
 
-  it('set the property and update the pill', function(done) {
+describe('pump', function ( ) {
+
+  it('set the property and update the pill', function (done) {
     var ctx = {
       settings: {
         units: 'mg/dl'
       }
       , pluginBase: {
-        updatePillText: function mockedUpdatePillText (plugin, options) {
+        updatePillText: function mockedUpdatePillText(plugin, options) {
           options.label.should.equal('Pump');
           options.value.should.equal('86.4U');
           done();
         }
       }
       , language: language
+      , levels: levels
     };
-    ctx.levels = levels;
 
-    var sbx = sandbox.clientInit(ctx, now.valueOf(), { devicestatus: statuses });
+    var sbx = sandbox.clientInit(ctx, now.valueOf(), {devicestatus: statuses});
 
     var unmockedOfferProperty = sbx.offerProperty;
     sbx.offerProperty = function mockedOfferProperty (name, setter) {
@@ -99,15 +97,16 @@ describe('pump', function() {
 
   });
 
-  it('not generate an alert when pump is ok', function(done) {
+  it('not generate an alert when pump is ok', function (done) {
     var ctx = {
       settings: {
         units: 'mg/dl'
       }
+      , notifications: require('../lib/notifications')(env, top_ctx)
       , language: language
+      , levels: levels
     };
-    ctx.levels = levels;
-    ctx.notifications = require('../lib/notifications')(env, ctx);
+
     ctx.notifications.initRequests();
 
     var sbx = sandbox.clientInit(ctx, now.valueOf(), {
@@ -123,15 +122,15 @@ describe('pump', function() {
     done();
   });
 
-  it('generate an alert when reservoir is low', function(done) {
+  it('generate an alert when reservoir is low', function (done) {
     var ctx = {
       settings: {
         units: 'mg/dl'
       }
+      , notifications: require('../lib/notifications')(env, top_ctx)
       , language: language
+      , levels: levels
     };
-    ctx.levels = levels;
-    ctx.notifications = require('../lib/notifications')(env, ctx);
 
     ctx.notifications.initRequests();
 
@@ -152,15 +151,15 @@ describe('pump', function() {
     done();
   });
 
-  it('generate an alert when reservoir is 0', function(done) {
+  it('generate an alert when reservoir is 0', function (done) {
     var ctx = {
       settings: {
         units: 'mg/dl'
       }
+      , notifications: require('../lib/notifications')(env, top_ctx)
       , language: language
+      , levels: levels
     };
-    ctx.levels = levels;
-    ctx.notifications = require('../lib/notifications')(env, ctx);
 
     ctx.notifications.initRequests();
 
@@ -181,15 +180,17 @@ describe('pump', function() {
     done();
   });
 
-  it('generate an alert when battery is low', function(done) {
+
+  it('generate an alert when battery is low', function (done) {
     var ctx = {
       settings: {
         units: 'mg/dl'
       }
+      , notifications: require('../lib/notifications')(env, top_ctx)
       , language: language
+      , levels: levels
     };
-    ctx.levels = levels;
-    ctx.notifications = require('../lib/notifications')(env, ctx);
+
     ctx.notifications.initRequests();
 
     var lowBattStatuses = _.cloneDeep(statuses);
@@ -209,15 +210,15 @@ describe('pump', function() {
     done();
   });
 
-  it('generate an urgent alarm when battery is really low', function(done) {
+  it('generate an urgent alarm when battery is really low', function (done) {
     var ctx = {
       settings: {
         units: 'mg/dl'
       }
+      , notifications: require('../lib/notifications')(env, top_ctx)
       , language: language
+      , levels: levels
     };
-    ctx.levels = levels;
-    ctx.notifications = require('../lib/notifications')(env, ctx);
 
     ctx.notifications.initRequests();
 
@@ -238,20 +239,21 @@ describe('pump', function() {
     done();
   });
 
-  it('not generate an alert for a stale pump data, when there is an offline marker', function(done) {
+  it('not generate an alert for a stale pump data, when there is an offline marker', function (done) {
     var ctx = {
       settings: {
         units: 'mg/dl'
       }
+      , notifications: require('../lib/notifications')(env, top_ctx)
       , language: language
+      , levels: levels
     };
-    ctx.levels = levels;
-    ctx.notifications = require('../lib/notifications')(env, ctx);
+
     ctx.notifications.initRequests();
 
     var sbx = sandbox.clientInit(ctx, now.add(1, 'hours').valueOf(), {
       devicestatus: statuses
-      , treatments: [{ eventType: 'OpenAPS Offline', mills: now.valueOf(), duration: 60 }]
+      , treatments: [{eventType: 'OpenAPS Offline', mills: now.valueOf(), duration: 60}]
     });
     sbx.extendedSettings = { 'enableAlerts': 'TRUE' };
     pump.setProperties(sbx);
@@ -262,42 +264,42 @@ describe('pump', function() {
     done();
   });
 
-  it('should handle virtAsst requests', function(done) {
+  it('should handle virtAsst requests', function (done) {
     var ctx = {
       settings: {
         units: 'mg/dl'
       }
+      , notifications: require('../lib/notifications')(env, top_ctx)
       , language: language
+      , levels: levels
     };
-    ctx.levels = levels;
-    ctx.notifications = require('../lib/notifications')(env, ctx);
-
+    
     ctx.language.set('en');
-    var sbx = sandbox.clientInit(ctx, now.valueOf(), { devicestatus: statuses });
+    var sbx = sandbox.clientInit(ctx, now.valueOf(), {devicestatus: statuses});
     pump.setProperties(sbx);
 
     pump.virtAsst.intentHandlers.length.should.equal(4);
 
-    pump.virtAsst.intentHandlers[0].intentHandler(function next (title, response) {
+    pump.virtAsst.intentHandlers[0].intentHandler(function next(title, response) {
       title.should.equal('Insulin Remaining');
       response.should.equal('You have 86.4 units remaining');
 
-      pump.virtAsst.intentHandlers[1].intentHandler(function next (title, response) {
+      pump.virtAsst.intentHandlers[1].intentHandler(function next(title, response) {
         title.should.equal('Pump Battery');
         response.should.equal('Your pump battery is at 1.52 volts');
-
-        pump.virtAsst.intentHandlers[2].intentHandler(function next (title, response) {
+        
+        pump.virtAsst.intentHandlers[2].intentHandler(function next(title, response) {
           title.should.equal('Insulin Remaining');
           response.should.equal('You have 86.4 units remaining');
-
-          pump.virtAsst.intentHandlers[3].intentHandler(function next (title, response) {
+    
+          pump.virtAsst.intentHandlers[3].intentHandler(function next(title, response) {
             title.should.equal('Pump Battery');
             response.should.equal('Your pump battery is at 1.52 volts');
             done();
           }, [], sbx);
-
+          
         }, [], sbx);
-
+          
       }, [], sbx);
 
     }, [], sbx);

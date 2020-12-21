@@ -4,46 +4,45 @@ const _ = require('lodash');
 const should = require('should');
 const moment = require('moment');
 const fs = require('fs');
+const language = require('../lib/language')(fs);
+const levels = require('../lib/levels');
 
 describe('loop', function() {
+  
+var ctx_top = {
+  language: language
+  , settings: require('../lib/settings')()
+  , levels: levels
+};
 
-  const language = require('../lib/language')(fs);
+ctx_top.language.set('en');
+var env = require('../env')();
+var loop = require('../lib/plugins/loop')(ctx_top);
+var sandbox = require('../lib/sandbox')(ctx_top);
 
-  const ctx = {
-    language: language
-    , settings: require('../lib/settings')()
-  };
-  ctx.language.set('en');
-  const env = require('../env')();
-  const sandbox = require('../lib/sandbox')();
-  const levels = require('../lib/levels');
-  ctx.levels = levels;
-
-  var loop = require('../lib/plugins/loop')(ctx);
-
-  var statuses = [
-    {
-      'created_at': '2016-08-13T20:09:15Z'
-      , 'device': 'loop://ExamplePhone'
-      , 'loop': {
-        'enacted': {
-          'timestamp': '2016-08-13T20:09:15Z'
-          , 'rate': 0.875
-          , 'duration': 30
-          , 'received': true
-        }
-        , 'version': '0.9.1'
-        , 'recommendedBolus': 0
-        , 'timestamp': '2016-08-13T20:09:15Z'
-        , 'predicted': {
-          'startDate': '2016-08-13T20:03:47Z'
-          , 'values': [
-              149
-              , 149
-              , 148
-              , 148
-              , 147
-              , 147
+var statuses = [
+  {
+     'created_at':'2016-08-13T20:09:15Z',
+     'device':'loop://ExamplePhone',
+     'loop':{
+        'enacted':{
+           'timestamp':'2016-08-13T20:09:15Z',
+           'rate':0.875,
+           'duration':30,
+           'received':true
+        },
+        'version':'0.9.1',
+        'recommendedBolus':0,
+        'timestamp':'2016-08-13T20:09:15Z',
+        'predicted':{
+           'startDate':'2016-08-13T20:03:47Z',
+           'values':[
+              149,
+              149,
+              148,
+              148,
+              147,
+              147
            ]
         }
         , 'iob': {
@@ -206,6 +205,7 @@ describe('loop', function() {
       settings: {
         units: 'mg/dl'
       }
+      , notifications: require('../lib/notifications')(env, ctx_top)
       , language: language
       , levels: levels
     };
@@ -234,6 +234,7 @@ describe('loop', function() {
       settings: {
         units: 'mg/dl'
       }
+      , notifications: require('../lib/notifications')(env, ctx_top)
       , language: language
       , levels: levels
     };
@@ -257,6 +258,7 @@ describe('loop', function() {
       settings: {
         units: 'mg/dl'
       }
+      , notifications: require('../lib/notifications')(env, ctx_top)
       , language: language
       , levels: levels
     };

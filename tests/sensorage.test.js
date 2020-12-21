@@ -8,6 +8,7 @@ describe('sage', function ( ) {
   const levels = require('../lib/levels');
   var env = require('../env')();
   var ctx = {};
+  ctx.levels = levels;
   ctx.ddata = require('../lib/data/ddata')();
   ctx.language = require('../lib/language')();
   ctx.levels = levels;

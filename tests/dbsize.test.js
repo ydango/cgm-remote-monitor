@@ -1,7 +1,13 @@
 'use strict';
 
 const fs = require('fs');
+const language = require('../lib/language')(fs);
+const levels = require('../lib/levels');
 require('should');
+
+var topctx = {
+  levels: levels
+}
 
 describe('Database Size', function() {
 
@@ -95,6 +101,7 @@ describe('Database Size', function() {
     var ctx = {
       settings: {}
       , language: language
+      , notifications: require('../lib/notifications')(env, topctx)
       , levels: levels
     };
 
@@ -123,12 +130,12 @@ describe('Database Size', function() {
     var ctx = {
       settings: {}
       , language: language
+      , notifications: require('../lib/notifications')(env, topctx)
       , levels: levels
     };
 
     ctx.notifications = require('../lib/notifications')(env, ctx);
     ctx.notifications.initRequests();
-    ctx.levels = require('../lib/levels');
 
     var sbx = sandbox.clientInit(ctx, Date.now(), dataUrgent);
     sbx.extendedSettings = { 'enableAlerts': 'TRUE' };

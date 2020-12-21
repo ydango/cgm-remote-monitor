@@ -32,6 +32,7 @@ describe('Notifications API', function ( ) {
           return { };
         }
       }
+      , levels: levels
     };
 
     ctx.language = language;

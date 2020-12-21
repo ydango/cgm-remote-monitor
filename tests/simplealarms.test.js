@@ -1,24 +1,23 @@
 var should = require('should');
+var levels = require('../lib/levels');
 
 describe('simplealarms', function ( ) {
-
   var env = require('../env')();
   var ctx = {
     settings: {}
     , language: require('../lib/language')()
+    , levels: levels
   };
+
+  var simplealarms = require('../lib/plugins/simplealarms')(ctx);
+
   ctx.ddata = require('../lib/data/ddata')();
-
-  var levels = require('../lib/levels');
-  ctx.levels = levels;
-
   ctx.notifications = require('../lib/notifications')(env, ctx);
   var bgnow = require('../lib/plugins/bgnow')(ctx);
 
   var now = Date.now();
   var before = now - (5 * 60 * 1000);
 
-  var simplealarms = require('../lib/plugins/simplealarms')(ctx);
 
   it('Not trigger an alarm when in range', function (done) {
     ctx.notifications.initRequests();
